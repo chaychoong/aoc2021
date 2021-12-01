@@ -1,0 +1,8 @@
+#+TITLE: Advent of Code 2021 Solutions
+
+* Introduction
+
+I'm thinking of trying out [[https://orgmode.org/worg/org-contrib/babel/how-to-use-Org-Babel-for-R.html][literate programming]] this year. The setup is simple: I'll be using Python 3, and each day's solution will be written in an ~.org~ file - which *should* be rendered nicely in GitHub's web UI - and the code blocks will be tangled to the source code files, i.e. the ~.py~ files will be generated from the main ~.org~ file.
+
+* Solutions
+- [[day1][Day 1]]

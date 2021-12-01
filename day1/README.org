@@ -1,0 +1,138 @@
+#+TITLE: Day 1
+#+PROPERTY: :dir day1
+#+PROPERTY: header-args:python :session day1 :results output
+#+PROPERTY: header-args:bash :session day1shell :results output :epilogue "true"
+
+#+BEGIN_SRC elisp :session day1 :exports none
+(setq org-babel-python-command "../.venv/bin/python")
+#+END_SRC
+
+#+begin_src bash :exports none
+source ../.venv/bin/activate
+#+end_src
+
+** Setup
+As usual, for day 1 there's always some scaffolding work to do. My preference is to have the examples and input files downloaded into the repo as ~.txt~ files, and then create a common function to read off it. This file is in ~utils/input.py~
+
+#+begin_src python
+import ast
+
+def parse_input(file_name):
+    output = []
+    with open(f"input/{file_name}.txt", "r") as file_reader:
+        for line in file_reader:
+            output.append(ast.literal_eval(line)) # without literal_eval, the lines will be read as strings
+
+    return output
+#+end_src
+
+** Part 1
+
+There's an example and answer given, let's use the TDD approach and create the tests first.
+
+#+begin_src python :tangle test.py
+import unittest
+
+from aoc2021.utils import parse_input
+
+
+class TestDay1Example(unittest.TestCase):
+    def test_day1_example(self):
+        from aoc2021.day1.main import day1_solution
+
+        input = parse_input("example.txt")
+        self.assertEqual(day1_solution(input), 7)
+#+end_src
+
+Let's start work on the solution. Naive approach: we get the first depth reading by popping the input, then we traverse the list and keep count of when the current reading > prev reading.
+
+#+begin_src python :tangle main.py
+def day1_solution(input):
+    count = 0
+    prev = input.pop(0)
+    for item in input:
+        if item > prev:
+            count += 1
+        prev = item
+
+    return count
+#+end_src
+
+I can't think of a more optimised solution. This uses =O(1)= space (at least, if you don't count the input), and =O(n)= time. Since we are going for the literate approach, there is no point code golfing it.
+
+We can now run unittest to verify our solution against the test case.
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: .
+: ----------------------------------------------------------------------
+: Ran 1 test in 0.001s
+: 
+: OK
+
+
+Let's get the answer for the input!
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input
+
+print(day1_solution(parse_input("input.txt")))
+#+end_src
+
+#+RESULTS:
+: 1154
+
+** Part 2
+
+Now we have to deal with a sliding windows. There's another example given, so we'll start by creating another test.
+
+#+begin_src python :tangle test.py
+    def test_day1_example_p2(self):
+        from aoc2021.day1.main import day1_solution_p2
+
+        input = parse_input("example.txt")
+        self.assertEqual(day1_solution_p2(input), 5)
+#+end_src
+
+Consider a list =[A, B, C, D]=, we are now trying to determine if =(B+C+D) > (A+B+C)=. If you drop =B+C= from both sides of the equation, we are simply comparing if =D>A=.
+
+If D is ~input[i]~, then A is ~input[i-3]~
+
+#+begin_src python :tangle main.py
+def day1_solution_p2(input):
+    count = 0
+    for i in range(3, len(input)):
+        if input[i] > input[i-3]:
+            count += 1
+
+    return count
+#+end_src
+
+Run unittest again to verify the results.
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: ..
+: ----------------------------------------------------------------------
+: Ran 2 tests in 0.001s
+: 
+: OK
+
+Seems good. Let's get the answer for part 2:
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input
+
+print(day1_solution_p2(parse_input("input.txt")))
+#+end_src
+
+#+RESULTS:
+: 1127
+
+Pretty easy day 1!
