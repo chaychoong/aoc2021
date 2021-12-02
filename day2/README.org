@@ -1,0 +1,151 @@
+#+TITLE: Day 2
+#+PROPERTY: :dir day2
+#+PROPERTY: header-args:python :session day2 :results output
+#+PROPERTY: header-args:bash :session day2shell :results output :epilogue "true"
+
+#+BEGIN_SRC elisp :session day2 :exports none
+(setq org-babel-python-command "../.venv/bin/python")
+#+END_SRC
+
+#+RESULTS:
+: ../.venv/bin/python
+
+#+begin_src bash :exports none
+source ../.venv/bin/activate
+#+end_src
+
+#+RESULTS:
+
+** Part 1
+
+Once again, there's a clear example and answer given. TDD time!
+
+#+begin_src python :tangle test.py
+import unittest
+
+from aoc2021.utils import parse_input
+
+
+class TestDay2Example(unittest.TestCase):
+    def test_day2_example(self):
+        from aoc2021.day2.main import day2_solution
+
+        input = parse_input("example.txt")
+        self.assertEqual(day2_solution(input), 150)
+#+end_src
+
+#+RESULTS:
+
+I'm pretty excited to try the new match case feature in Python 3.10, and this seems to be a perfect use case for it.
+
+#+begin_src python :tangle main.py
+def day2_solution(input):
+    horizontal_pos = 0
+    depth = 0
+    for item in input:
+        (direction, value) = item.split()
+        value = int(value)
+
+        match direction:
+            case "forward":
+                horizontal_pos += value
+            case "down":
+                depth += value
+            case "up":
+                depth -= value
+
+    return horizontal_pos * depth
+#+end_src
+
+#+RESULTS:
+
+This is a pretty straightforward pattern match case puzzle, nothing to optimise here.
+
+Running the unit test..
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: .
+: ----------------------------------------------------------------------
+: Ran 1 test in 0.002s
+:
+: OK
+
+
+Let's get the answer for the input! I pretty much copied and paste day 1's org file here.
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input
+
+print(day2_solution(parse_input("input.txt")))
+#+end_src
+
+#+RESULTS:
+: 1815044
+
+** Part 2
+
+Part 2 seems like just a simple modification of Part 1's solution. Again, let's start with the test.
+
+#+begin_src python :tangle test.py
+    def test_day2_example_p2(self):
+        from aoc2021.day2.main import day2_solution_p2
+
+        input = parse_input("example.txt")
+        self.assertEqual(day2_solution_p2(input), 900)
+#+end_src
+
+Here, we'll add a new aim variable, and rewrite the logic to fit the requirements.
+
+#+begin_src python :tangle main.py
+def day2_solution_p2(input):
+    horizontal_pos = 0
+    depth = 0
+    aim = 0
+
+    for item in input:
+        (direction, value) = item.split()
+        value = int(value)
+
+        match direction:
+            case "forward":
+                horizontal_pos += value
+                depth += aim * value
+            case "down":
+                aim += value
+            case "up":
+                aim -= value
+
+    return horizontal_pos * depth
+#+end_src
+
+#+RESULTS:
+
+Run unittest again to verify the results.
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: ..
+: ----------------------------------------------------------------------
+: Ran 2 tests in 0.002s
+:
+: OK
+
+And the answer for part 2 is..
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input
+
+print(day2_solution_p2(parse_input("input.txt")))
+#+end_src
+
+#+RESULTS:
+: 1739283308
+
+This is way easier than day 1. They should have started with this!
