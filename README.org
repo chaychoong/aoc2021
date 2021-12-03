@@ -7,3 +7,4 @@ I'm thinking of trying out [[https://orgmode.org/worg/org-contrib/babel/how-to-u
 * Solutions
 - [[day1][Day 1]]
 - [[day2][Day 2]]
+- [[day3][Day 3]]

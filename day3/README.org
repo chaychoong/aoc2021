@@ -1,0 +1,197 @@
+#+TITLE: Day 3
+#+PROPERTY: :dir day3
+#+PROPERTY: header-args:python :session day3 :results output
+#+PROPERTY: header-args:bash :session day3shell :results output :epilogue "true"
+
+#+BEGIN_SRC elisp :session day3 :exports none
+(setq org-babel-python-command "../.venv/bin/python")
+#+END_SRC
+
+#+RESULTS:
+: ../.venv/bin/python
+
+#+begin_src bash :exports none
+source ../.venv/bin/activate
+#+end_src
+
+#+RESULTS:
+
+** Part 1
+
+Same setup here, nothing much to see
+
+#+begin_src python :tangle test.py
+import unittest
+
+from aoc2021.utils import parse_input_lambda
+#+end_src
+
+#+RESULTS:
+
+We'll use the ~parse_input_lambda~ function here, because I think it's worth parsing the input as =str= rather than =int= since we'll need to inspect them positionally, and =int= values are not subscriptable.
+
+#+begin_src python :tangle test.py
+lambda_inp = lambda x: str(x)
+#+end_src
+
+#+begin_src python :tangle test.py
+class TestDay3Example(unittest.TestCase):
+    def test_day3_example(self):
+        from aoc2021.day3.main import day3_solution
+
+        input = parse_input_lambda("example.txt", lambda_inp)
+        self.assertEqual(day3_solution(input), 198)
+#+end_src
+
+#+RESULTS:
+
+=Most common bit= sounds like it can be easily achieved by constructing an array, and for each line, keep count of the 1s according to their respective position.
+
+
+#+begin_src python :tangle main.py
+def day3_solution(input):
+    bits_arr = [0]*len(input[0])
+
+    for line in input:
+        for i in range(len(line)):
+            bits_arr[i] += int(line[i])
+
+#+end_src
+
+#+RESULTS:
+
+So here, the "most common bit" simply means =if sum of position > half of the length of the input=. Least common bit is just the inverse of that.
+
+#+begin_src python :tangle main.py
+    mcb_arr = []
+    lcb_arr = []
+
+    for i in bits_arr:
+        is_mcb = (2*i) > len(input)
+
+        mcb_arr.append("1" if is_mcb else "0")
+        lcb_arr.append("0" if is_mcb else "1")
+
+    mcb_int = int("".join(mcb_arr), 2) # this ia python trick to convert a binary to an int
+    lcb_int = int("".join(lcb_arr), 2)
+
+    return mcb_int*lcb_int
+#+end_src
+
+#+RESULTS:
+
+This is a pretty straightforward pattern match case puzzle, nothing to optimise here.
+
+Running the unit test..
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: .
+: ----------------------------------------------------------------------
+: Ran 1 test in 0.002s
+: 
+: OK
+
+
+Let's get the answer for the input! I pretty much copied and paste day 1's org file here.
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input_lambda
+from aoc2021.day3.main import day3_solution
+
+print(day3_solution(parse_input_lambda("input.txt", lambda x: str(x))))
+#+end_src
+
+#+RESULTS:
+: 749376
+
+** Part 2
+
+Part 2 sounds fun finally! Tests are here, let's use the same lambda
+
+#+begin_src python :tangle test.py
+    def test_day3_example_p2(self):
+        from aoc2021.day3.main import day3_solution_p2
+
+        input = parse_input_lambda("example.txt", lambda_inp)
+        self.assertEqual(day3_solution_p2(input), 230)
+#+end_src
+
+Okay, let's start with making sure that there are no duplicates in the list. Just in case
+
+#+begin_src python :tangle main.py
+def day3_solution_p2(input):
+    input = list(set(input))
+#+end_src
+
+Let's clone the input. Then we filter the list based on the most common bit.
+
+#+begin_src python :tangle main.py
+    mcb_inp = input[:] # makes a copy by value, without referencing the original
+
+    for i in range(len(mcb_inp[0])):
+        mcb = '1' if 2*sum([int(x[i]) for x in mcb_inp]) >= len(mcb_inp) else '0'
+#+end_src
+
+I could create a filter function.. or I could just use python's built-in ~filter~ method to do the filtering.
+
+#+begin_src python :tangle main.py
+        mcb_inp = list(filter(lambda x : x[i] == mcb, mcb_inp))
+#+end_src
+
+If there's one item left, let's just break from the for loop and then get our int
+
+#+begin_src python :tangle main.py
+        if len(mcb_inp) == 1:
+            break
+
+    mcb_int = int(mcb_inp[0], 2)
+#+end_src
+
+Let's do the exact same thing for the least common bit, except that the logic is inversed this time
+
+#+begin_src python :tangle main.py
+    lcb_inp = input[:]
+
+    for i in range(len(lcb_inp[0])):
+        lcb = '0' if 2*sum([int(x[i]) for x in lcb_inp]) >= len(lcb_inp) else '1'
+        lcb_inp = list(filter(lambda x : x[i] == lcb, lcb_inp))
+        if len(lcb_inp) == 1:
+            break
+
+    lcb_int = int(lcb_inp[0], 2)
+
+    return mcb_int * lcb_int
+#+end_src
+
+#+RESULTS:
+
+Run unittest again to verify the results.
+
+#+begin_src bash :exports both
+python -m unittest test.py
+#+end_src
+
+#+RESULTS:
+: ..
+: ----------------------------------------------------------------------
+: Ran 2 tests in 0.002s
+:
+: OK
+
+And the answer for part 2 is..
+
+#+begin_src python :exports both
+from aoc2021.utils import parse_input_lambda
+from aoc2021.day3.main import day3_solution_p2
+
+print(day3_solution_p2(parse_input_lambda("input.txt", lambda x: str(x))))
+#+end_src
+
+#+RESULTS:
+: 2372923
+
+It's getting harder, but it's still pretty easy.
